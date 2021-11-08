@@ -8,7 +8,7 @@ class BrazilApiController {
             const address = await brazilApi.brazilApiAddresses(cep);
 
             return res.status(200).send(address);
-        } catch(err) {
+        } catch (err) {
             return res.status(400).send(err);
         }
     }

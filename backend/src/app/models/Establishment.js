@@ -54,7 +54,7 @@ const EstablishmentSchema = new mongoose.Schema(
       addressComplement: {
         type: String,
         required: false,
-    },
+      },
     },
     phones: [
       {

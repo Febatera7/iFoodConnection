@@ -5,7 +5,7 @@ async function brazilApiAddresses(cep) {
         const brazilApiAddress = await axios.get(`https://brasilapi.com.br/api/cep/v2/${cep}`);
 
         return brazilApiAddress.data;
-    } catch(err) {
+    } catch (err) {
         throw err;
     }
 };
