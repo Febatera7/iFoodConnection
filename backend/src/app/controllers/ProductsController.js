@@ -29,7 +29,7 @@ class ProductsController {
         const { productId } = req.params;
         await Products.findOneAndUpdate(
             { _id: productId, establishmentId: req.establishmentId },
-            { $set: req.body }
+            { $set: req.body },
         );
 
         return res.status(200).json({ message: "Produto atualizado com sucesso." })

@@ -20,15 +20,41 @@ const EstablishmentSchema = new mongoose.Schema(
     },
     cnpj: {
       type: String,
-      required: true
+      required: true,
     },
     address: {
-      type: String,
-      required: true
+      street: {
+        type: String,
+        required: true,
+      },
+      number: {
+        type: Number,
+        required: true,
+      },
+      neighborhood: {
+        type: String,
+        required: true,
+      },
+      cep: {
+        type: String,
+        required: true,
+      },
+      city: {
+        type: String,
+        required: true,
+      },
+      state: {
+        type: String,
+        required: true,
+      },
+      country: {
+        type: String,
+        required: true,
+      },
+      addressComplement: {
+        type: String,
+        required: false,
     },
-    addressComplement: {
-      type: String,
-      required: false
     },
     phones: [
       {

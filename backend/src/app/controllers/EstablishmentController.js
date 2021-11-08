@@ -54,7 +54,7 @@ class EstablishmentController {
         _id: establishment.id,
         nome: establishment.name,
         email: establishment.email,
-        senha: establishment.password,
+        endereco: establishment.address,
         telefones: establishment.phones.map(p => {
           return {
             ddd: p.ddd,
