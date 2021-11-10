@@ -1,27 +1,26 @@
-const mongoose = require("mongoose");
+const Sequelize = require('sequelize');
+const { Model } = require('sequelize');
+class Products extends Model {
+    static init(sequelize) {
+        super.init(
+            {
+                nm_alimento: Sequelize.STRING,
+                ds_alimento: Sequelize.STRING,
+                ds_tipo: Sequelize.STRING,
+                vl_alimento: Sequelize.FLOAT,
+            },
+            {
+                sequelize,
+                tableName: 't_ifd_alime',
+            },
+        )
 
-const ProductsSchema = new mongoose.Schema(
-    {
-        plate: {
-            type: String,
-            required: true,
-        },
-        description: {
-            type: String,
-            required: true
-        },
-        price: {
-            type: Number,
-            required: true
-        },
-        establishmentId: {
-            type: String,
-            required: true
-        },
-    },
-    {
-        timestamps: true,
+        return this;
     }
-);
 
-module.exports = mongoose.model('Products', ProductsSchema);
+    static associate(models) {
+        this.belongsTo(models.Establishment, { foreignKey: 't_ifd_rest_cd_rest', as: 'establishment' });
+    }
+}
+
+module.exports = Products;

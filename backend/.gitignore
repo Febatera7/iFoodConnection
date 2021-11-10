@@ -1,7 +1,12 @@
+#Modules
 node_modules
 
+#Enviroments
 .env
 
+#Locks files
 yarn.lock
-
 package-lock.json
+
+#Debug files
+.vscode

@@ -9,7 +9,10 @@ class BrazilApiController {
 
             return res.status(200).send(address);
         } catch (err) {
-            return res.status(400).send(err);
+            return res.status(400).json({
+                message: "Error",
+                err
+            });
         }
     }
 }

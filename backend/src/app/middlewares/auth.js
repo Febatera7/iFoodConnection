@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
 const authConfig = require('../../config/auth');
-const Establishment = require('../models/Establishment');
+const EstablishmentOwner = require('../models/EstablishmentOwner');
 
 module.exports = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -10,25 +10,25 @@ module.exports = async (req, res, next) => {
 
   if (!token) {
     return res.status(401).json({
-      mensagem: 'Não autorizado',
+      message: 'User not authorized',
     });
   }
 
   try {
-    const establishment = await Establishment.findOne({ token });
+    const owner = await EstablishmentOwner.findOne({ where: { ds_token: token } });
 
-    if (!establishment) {
-      return res.status(401).json({ mensagem: 'Não autorizado' });
+    if (!owner) {
+      return res.status(401).json({ message: 'User not authorized' });
     }
 
     const decoded = await promisify(jwt.verify)(token, authConfig.secret);
 
-    req.establishmentId = decoded._id ? decoded._id : decoded.id;
+    req.user = decoded.id;
 
     return next();
   } catch (err) {
     return res.status(401).json({
-      mensagem: 'Sessão expirada',
+      message: 'Expired session',
     });
   }
 };

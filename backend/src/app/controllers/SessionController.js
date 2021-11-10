@@ -1,46 +1,42 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const Establishment = require('../models/Establishment');
 const authConfig = require('../../config/auth');
+const EstablishmentOwner = require('../models/EstablishmentOwner');
 
 class SessionController {
   async create(req, res) {
     try {
       const { email, password } = req.body;
 
-      const establishment = await Establishment.findOne({ email });
+      const establishment = await EstablishmentOwner.findOne({ where: { ds_email: email } });
 
       if (!establishment) {
         return res.status(401).json({ message: 'Usuário e/ou senha inválidos' });
       }
 
-      if (!(await bcrypt.compare(password, establishment.password))) {
+      if (!(await bcrypt.compare(password, establishment.ds_senha))) {
         return res.status(401).json({ message: 'Usuário e/ou senha inválidos' });
       }
 
-      const token = jwt.sign({ id: establishment._id }, authConfig.secret, {
+      const token = jwt.sign({ id: establishment.cd_usuario }, authConfig.secret, {
         expiresIn: authConfig.expiresIn,
       });
 
-      await establishment.updateOne({
-        token,
-        last_login: new Date(),
+      await establishment.update({
+        ds_token: token,
       });
-
-      const establishmentUpdated = await Establishment.findOne({ token });
-
-      let data = new Date(establishmentUpdated.last_login.valueOf() - establishmentUpdated.last_login.getTimezoneOffset() * 60000);
-      const ultimo_login = data.toISOString().replace(/\.\d{3}Z$/, '');
 
       return res.json({
-        id: establishmentUpdated.id,
-        nome: establishmentUpdated.name,
-        email: establishmentUpdated.email,
-        ultimo_login,
-        token: establishmentUpdated.token,
+        cd_usuario: establishment.cd_usuario,
+        nome: establishment.nm_responsavel,
+        email: establishment.ds_email,
+        token: establishment.ds_token,
       });
     } catch (err) {
-      return res.status(400).send(err);
+      return res.status(400).json({
+        message: "Error",
+        err
+      });
     }
   }
 }
