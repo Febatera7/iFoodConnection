@@ -1,17 +1,22 @@
 module.exports = {
     up: (queryInterface, Sequelize) => {
-        return queryInterface.createTable('t_ifd_tel_rest', {
+        return queryInterface.createTable('t_ifd_tel_resp', {
+            id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                autoIncrement: true,
+                unique: true,
+            },
             cd_telefone: {
                 type: Sequelize.STRING(11),
                 allowNull: false,
                 primaryKey: true,
-                unique: true,
             },
-            t_ifd_end_cd_end: {
+            t_ifd_rest_cd_resp: {
                 type: Sequelize.INTEGER.UNSIGNED.ZEROFILL,
                 references: {
-                    model: 't_ifd_end',
-                    key: 'cd_end'
+                    model: 't_ifd_resp',
+                    key: 'cd_usuario'
                 },
                 onUpdate: 'CASCADE',
                 onDelete: 'CASCADE',
@@ -37,6 +42,6 @@ module.exports = {
         })
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable('t_ifd_tel_rest');
+        return queryInterface.dropTable('t_ifd_tel_resp');
     }
 }

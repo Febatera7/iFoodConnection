@@ -5,6 +5,7 @@ class Address extends Model {
     static init(sequelize) {
         super.init(
             {
+                cd_end: Sequelize.INTEGER,
                 ds_cep: Sequelize.STRING,
                 ds_uf: Sequelize.STRING,
                 ds_cidade: Sequelize.STRING,

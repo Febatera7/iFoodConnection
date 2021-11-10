@@ -6,6 +6,12 @@ const EstablishmentOwner = require('../models/EstablishmentOwner');
 module.exports = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
+  if (!authHeader) {
+    return res.status(401).json({
+      message: 'User not authorized',
+    });
+  }
+
   const [, token] = authHeader.split(' ');
 
   if (!token) {

@@ -19,12 +19,16 @@ class ProductsController {
                 return res.status(400).json({ message: 'Establishment not found' });
             }
 
-            let randomNumericProductmentId = Math.floor(Math.random() * 999999999999);
+            let randomNumericProductmentId = Math.floor(Math.random() * 999999999);
 
-            const findEqualProductIdOnDB = await Establishment.findByPk(randomNumericProductmentId);
+            const findEqualProductIdOnDB = await Products.findOne({
+                where: {
+                    cd_alimento: randomNumericProductmentId
+                }
+            });
 
             if (findEqualProductIdOnDB) {
-                randomNumericProductmentId = Math.floor(Math.random() * 999999999999);
+                randomNumericProductmentId = Math.floor(Math.random() * 999999999);
             }
 
             const product = await Products.create({
@@ -64,7 +68,8 @@ class ProductsController {
             }
 
             const products = await Products.findAll({
-                where: { t_ifd_rest_cd_rest: establishment.cd_rest }
+                where: { t_ifd_rest_cd_rest: establishment.cd_rest },
+                order: ['id'],
             });
 
             return res.status(200).json(products);
@@ -86,7 +91,11 @@ class ProductsController {
                 price,
             } = req.body;
 
-            const product = await Products.findByPk(productId);
+            const product = await Products.findOne({
+                where: {
+                    cd_alimento: productId,
+                },
+            });
 
             if (!product) {
                 return res.status(400).json({ message: "Product not found" });
@@ -99,7 +108,10 @@ class ProductsController {
                 vl_alimento: price,
             });
 
-            return res.status(200).json({ message: "Updated product" })
+            return res.status(200).json({
+                message: "Updated product",
+                product
+            })
         } catch (err) {
             return res.status(400).json({
                 message: "Error",
@@ -112,7 +124,11 @@ class ProductsController {
         try {
             const { productId } = req.params;
 
-            const product = await Products.findByPk(productId);
+            const product = await Products.findOne({
+                where: {
+                    cd_alimento: productId,
+                },
+            });
 
             if (!product) {
                 return res.status(400).json({ message: "Product not found" });

@@ -1,11 +1,16 @@
 module.exports = {
     up: (queryInterface, Sequelize) => {
         return queryInterface.createTable('t_ifd_alime', {
+            id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                autoIncrement: true,
+                unique: true,
+            },
             cd_alimento: {
                 type: Sequelize.INTEGER.UNSIGNED.ZEROFILL,
                 allowNull: false,
                 primaryKey: true,
-                unique: true,
             },
             nm_alimento: {
                 type: Sequelize.STRING(30),

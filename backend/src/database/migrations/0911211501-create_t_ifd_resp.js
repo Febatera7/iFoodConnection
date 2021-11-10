@@ -1,11 +1,16 @@
 module.exports = {
     up: (queryInterface, Sequelize) => {
         return queryInterface.createTable('t_ifd_resp', {
+            id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                autoIncrement: true,
+                unique: true,
+            },
             cd_usuario: {
                 type: Sequelize.INTEGER.UNSIGNED.ZEROFILL,
                 allowNull: false,
                 primaryKey: true,
-                unique: true,
             },
             nm_responsavel: {
                 type: Sequelize.STRING(30),

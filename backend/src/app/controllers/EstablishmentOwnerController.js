@@ -37,13 +37,17 @@ class EstablishmentOwnerController {
 
             const passwordHash = await bcrypt.hash(password, 8);
 
-            const findEqualIdOnDB = await EstablishmentOwner.findByPk(randomNumericId);
+            const findEqualIdOnDB = await EstablishmentOwner.findOne({
+                where: {
+                    cd_usuario: randomNumericId
+                },
+            });
 
             if (findEqualIdOnDB) {
                 randomNumericId = Math.floor(Math.random() * 999999999);
             }
 
-            const token = jwt.sign({ id: randomNumericId }, authConfig.secret, {
+            const token = await jwt.sign({ id: randomNumericId }, authConfig.secret, {
                 expiresIn: authConfig.expiresIn,
             });
 
@@ -61,7 +65,7 @@ class EstablishmentOwnerController {
             }
 
             const ownerPhone = await EstablishmentOwnerPhone.create({
-                cd_telefone: phone.ddd.concat(phone.number),
+                cd_telefone: `${phone.ddd}${phone.number}`,
                 nr_ddd: phone.ddd,
                 nr_telefone: phone.number,
                 t_ifd_rest_cd_resp: establishmentOwner.cd_usuario,
@@ -74,25 +78,38 @@ class EstablishmentOwnerController {
             return res.status(201).json({
                 message: 'User succesfully created',
                 establishmentOwner,
-                ownerPhone
+                ownerPhone,
             });
         } catch (err) {
             return res.status(400).json({
                 message: "Error",
-                err
+                err,
             });
         }
     }
 
     async read(req, res) {
         try {
-            const establishmentOwner = await EstablishmentOwner.findByPk(req.user);
+            const establishmentOwner = await EstablishmentOwner.findOne({
+                where: {
+                    cd_usuario: req.user
+                }
+            });
 
             if (!establishmentOwner) {
                 return res.status(400).json({ message: 'User not found' });
             }
 
-            return res.status(200).json(establishmentOwner);
+            const ownerPhones = await EstablishmentOwnerPhone.findAll({
+                where: {
+                    t_ifd_rest_cd_resp: req.user,
+                }
+            });
+
+            return res.status(200).json({
+                establishmentOwner,
+                ownerPhones,
+            });
         } catch (err) {
             return res.status(400).json({
                 message: "Error",
@@ -109,7 +126,12 @@ class EstablishmentOwnerController {
                 email,
                 phone
             } = req.body;
-            const establishmentOwner = await EstablishmentOwner.findByPk(req.user);
+
+            const establishmentOwner = await EstablishmentOwner.findOne({
+                where: {
+                    cd_usuario: req.user
+                }
+            });
 
             if (!establishmentOwner) {
                 return res.status(400).json({ message: 'User not found' });
@@ -121,27 +143,29 @@ class EstablishmentOwnerController {
                 ds_email: email
             });
 
+            let phoneUpdate;
+
             if (phone) {
-                const phoneUpdate = await EstablishmentOwnerPhone.findOne({
-                    include: [
-                        {
-                            model: EstablishmentOwner,
-                            as: 'owner',
-                            where: {
-                                cd_usuario: establishmentOwner.cd_usuario,
-                            },
-                        },
-                    ],
+                phoneUpdate = await EstablishmentOwnerPhone.findOne({
+                    where: {
+                        t_ifd_rest_cd_resp: establishmentOwner.cd_usuario,
+                    },
                 });
 
                 await phoneUpdate.update({
                     nr_ddd: phone.ddd,
                     nr_telefone: phone.number,
-                    cd_telefone: phone.ddd.concat(phone.number),
+                    cd_telefone: phone.ddd && !phone.number ? `${phone.ddd}${phoneUpdate.nr_telefone}` :
+                        phone.number && !phone.ddd ? `${phoneUpdate.nr_ddd}${phone.number}` :
+                            `${phone.ddd}${phone.number}`,
                 });
             }
 
-            return res.status(200).json(establishmentOwner);
+            return res.status(200).json({
+                message: 'User succesfully created',
+                establishmentOwner,
+                phoneUpdate
+            });
         } catch (err) {
             return res.status(400).json({
                 message: "Error",
@@ -152,7 +176,11 @@ class EstablishmentOwnerController {
 
     async delete(req, res) {
         try {
-            const establishmentOwner = await EstablishmentOwner.findByPk(req.user);
+            const establishmentOwner = await EstablishmentOwner.findOne({
+                where: {
+                    cd_usuario: req.user
+                }
+            });
 
             if (!establishmentOwner) {
                 return res.status(400).json({ message: 'User not found' });

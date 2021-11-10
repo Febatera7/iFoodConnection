@@ -1,11 +1,16 @@
 module.exports = {
     up: (queryInterface, Sequelize) => {
         return queryInterface.createTable('t_ifd_end', {
+            id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                autoIncrement: true,
+                unique: true,
+            },
             cd_end: {
                 type: Sequelize.INTEGER.UNSIGNED.ZEROFILL,
                 allowNull: false,
                 primaryKey: true,
-                unique: true,
             },
             t_ifd_rest_cd_rest: {
                 type: Sequelize.INTEGER.UNSIGNED.ZEROFILL,

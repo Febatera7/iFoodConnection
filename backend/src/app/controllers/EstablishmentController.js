@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const Establishment = require('../models/Establishment');
 const EstablishmentOwner = require('../models/EstablishmentOwner');
 const EstablishmentPhone = require('../models/EstablishmentPhone');
@@ -17,7 +18,11 @@ class EstablishmentController {
         phone
       } = req.body;
 
-      const owner = await EstablishmentOwner.findByPk(req.user);
+      const owner = await EstablishmentOwner.findOne({
+        where: {
+          cd_usuario: req.user
+        }
+      });
 
       if (!owner) {
         return res.status(400).json({
@@ -47,7 +52,7 @@ class EstablishmentController {
       });
 
       if (cnpjOrEmailExists) {
-        return cnpjOrEmailExists.nr_cpf === cpf ?
+        return cnpjOrEmailExists.nr_cnpj === cnpj ?
           res.status(400).json({ message: 'CPF already registered' }) :
           cnpjOrEmailExists.ds_email === email ?
             res.status(400).json({ message: 'E-mail already registered' }) :
@@ -56,7 +61,11 @@ class EstablishmentController {
 
       let randomNumericEstablishmentId = Math.floor(Math.random() * 9999999999);
 
-      const findEqualEstablishmentIdOnDB = await Establishment.findByPk(randomNumericEstablishmentId);
+      const findEqualEstablishmentIdOnDB = await Establishment.findOne({
+        where: {
+          cd_rest: randomNumericEstablishmentId
+        },
+      });
 
       if (findEqualEstablishmentIdOnDB) {
         randomNumericEstablishmentId = Math.floor(Math.random() * 9999999999);
@@ -71,7 +80,7 @@ class EstablishmentController {
         nr_cnpj: cnpj,
         ds_plano: plan,
         ds_especialidade: especiality,
-        dt_entrada: new Date(),
+        t_ifd_rest_cd_resp: owner.cd_usuario,
       });
 
       if (!establishment) {
@@ -102,8 +111,8 @@ class EstablishmentController {
         return res.status(400).json({ message: 'Fail to create establishment address' });
       }
 
-      const establishmentPhone = await EstablishmentOwnerPhone.create({
-        cd_telefone: phone.ddd.concat(phone.number),
+      const establishmentPhone = await EstablishmentPhone.create({
+        cd_telefone: `${phone.ddd}${phone.number}`,
         nr_ddd: phone.ddd,
         nr_telefone: phone.number,
         t_ifd_end_cd_end: establishmentAddress.cd_end,
@@ -134,11 +143,28 @@ class EstablishmentController {
           t_ifd_rest_cd_resp: req.user
         }
       });
-
+      
       if (!establishment) {
         return res.status(400).json({ message: "Establishment not found" });
       }
-      return res.status(200).json(establishment);
+      
+      const address = await Address.findOne({
+        where: {
+          t_ifd_rest_cd_rest: establishment.cd_rest,
+        },
+      });
+      
+      const phone = await EstablishmentPhone.findAll({
+        where: {
+          t_ifd_end_cd_end: address.cd_end,
+        },
+      });
+
+      return res.status(200).json({
+        establishment,
+        address,
+        phone,
+      });
     } catch (err) {
       return res.status(400).json({
         message: "Error",
@@ -171,7 +197,7 @@ class EstablishmentController {
         return res.status(400).json({ message: "Establishment not found" });
       }
 
-      await Establishment.update({
+      await establishment.update({
         nm_usuario: responsible,
         ds_email: email,
         nm_razao_social: corporateName,
@@ -181,17 +207,15 @@ class EstablishmentController {
         ds_especialidade: especiality,
       });
 
+      console.log(establishment);
+
+      let addressUpdate;
+
       if (address) {
-        const addressUpdate = await Address.findOne({
-          include: [
-            {
-              model: EstablishmentOwner,
-              as: 'establishment',
-              where: {
-                t_ifd_rest_cd_rest: establishment.cd_rest,
-              },
-            },
-          ],
+        addressUpdate = await Address.findOne({
+          where: {
+            t_ifd_rest_cd_rest: establishment.cd_rest,
+          },
         });
 
         await addressUpdate.update({
@@ -205,40 +229,37 @@ class EstablishmentController {
         });
       }
 
+      let phoneUpdate;
+
       if (phone) {
         const addressUpdatedOrNot = await Address.findOne({
-          include: [
-            {
-              model: EstablishmentOwner,
-              as: 'establishment',
-              where: {
-                t_ifd_rest_cd_rest: establishment.cd_rest,
-              },
-            },
-          ],
+          where: {
+            t_ifd_rest_cd_rest: establishment.cd_rest,
+          },
         });
 
-        const phoneUpdate = await EstablishmentPhone.findOne({
-          include: [
-            {
-              model: Address,
-              as: 'endereco',
-              where: {
-                t_ifd_end_cd_end: addressUpdatedOrNot.cd_end,
-              },
-            },
-          ],
+        phoneUpdate = await EstablishmentPhone.findOne({
+          where: {
+            t_ifd_end_cd_end: addressUpdatedOrNot.cd_end,
+          },
         });
 
         await phoneUpdate.update({
           nr_ddd: phone.ddd,
           nr_telefone: phone.number,
-          cd_telefone: phone.ddd.concat(phone.number),
+          cd_telefone: phone.ddd && !phone.number ? `${phone.ddd}${phoneUpdate.nr_telefone}` :
+            phone.number && !phone.ddd ? `${phoneUpdate.nr_ddd}${phone.number}` :
+              `${phone.ddd}${phone.number}`,
         });
       }
 
 
-      return res.status(200).json({ message: "Updated establishment data" });
+      return res.status(200).json({
+        message: "Updated establishment data",
+        establishment,
+        addressUpdate,
+        phoneUpdate
+      });
     } catch (err) {
       return res.status(400).json({
         message: "Error",

@@ -4,6 +4,7 @@ class Establishment extends Model {
   static init(sequelize) {
     super.init(
       {
+        cd_rest: Sequelize.INTEGER,
         nm_usuario: Sequelize.STRING,
         ds_email: Sequelize.STRING,
         nr_cnpj: Sequelize.STRING,
@@ -11,7 +12,6 @@ class Establishment extends Model {
         nm_loja: Sequelize.STRING,
         ds_especialidade: Sequelize.STRING,
         ds_plano: Sequelize.STRING,
-        dt_entrada: Sequelize.DATE,
       },
       {
         sequelize,

@@ -1,11 +1,16 @@
 module.exports = {
     up: (queryInterface, Sequelize) => {
         return queryInterface.createTable('t_ifd_rest', {
+            id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                autoIncrement: true,
+                unique: true,
+            },
             cd_rest: {
                 type: Sequelize.INTEGER.UNSIGNED.ZEROFILL,
                 allowNull: false,
                 primaryKey: true,
-                unique: true,
             },
             t_ifd_rest_cd_resp: {
                 type: Sequelize.INTEGER.UNSIGNED.ZEROFILL,
@@ -50,6 +55,7 @@ module.exports = {
             dt_entrada: {
                 type: Sequelize.DATE,
                 allowNull: false,
+                defaultValue: Sequelize.fn("now"),
             },
             createdAt: {
                 type: Sequelize.DATE,
